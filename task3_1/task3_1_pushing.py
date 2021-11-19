@@ -94,21 +94,34 @@ def solution():
     startPos = sim.getJointPosition('LARM_JOINT5')
     cubePos = np.array([0.33, 0, 1.0])
     
-    # target1 = np.array([0.2, startPos[1], startPos[2]])
-    # target2 = np.array([0.2, 0, 1])
-    # target3 = finalTargetPos - [0.1, 0, 0]
+    target1 = np.array([0.2, startPos[1], startPos[2]])
+    target2 = np.array([0.2, 0, 1])
+    target3 = finalTargetPos - [0.13, 0, 0]
 
-    target1 = np.array([0.22, 0.22, .95])
-    target2 = np.array([0.22, 0.0, .94])
-    target3 = np.array([0.63, 0.0, .94])
+    # target1 = np.array([0.22, 0.22, .95])
+    # target2 = np.array([0.22, 0.0, .94])
+    # target3 = np.array([0.63, 0.0, .94])
 
     endEffector = 'LHAND'
-    sim.move_with_PD(endEffector, target1, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(endEffector, target2, speed=0.01, orientation=[0,0,1], 
+    print("target 1")
+    time.sleep(1)
+    sim.move_with_PD(endEffector, target2, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(endEffector, target3, speed=0.01, orientation=[0,0,1], 
-        threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    print("target 2")
+    time.sleep(1)
+    sim.move_with_PD(endEffector, target3, speed=0.01, orientation=None, 
+        threshold=1e-3, maxIter=1000, debug=False, verbose=False)
+    print("target 3")
+    time.sleep(1)
+
+    # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(endEffector, target3, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
 
 tableId, cubeId, targetId = getReadyForTask()
 solution()
