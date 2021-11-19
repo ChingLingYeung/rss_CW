@@ -116,26 +116,49 @@ def solution():
 
     leftEndEffector = 'LHAND'
     rightEndEffector = 'RHAND'
-    sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=[0,0,1], 
+
+    sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(leftEndEffector, ltarget2, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(leftEndEffector, ltarget2, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(rightEndEffector, rtarget2, speed=0.01, orientation=[0,0,1], 
+    sim.move_with_PD(rightEndEffector, rtarget2, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
 
 
+    # sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=None, 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    sim.move_with_PD(rightEndEffector, rtarget3, speed=0.01, orientation=None, 
+        threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    sim.move_with_PD(leftEndEffector, ltarget3, speed=0.01, orientation=None, 
+        threshold=1e-3, maxIter=500, debug=False, verbose=False)
+
+
+    # sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
     # sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=[0,0,1], 
     #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(rightEndEffector, rtarget3, speed=0.01, orientation=[0,0,1], 
-        threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    sim.move_with_PD(leftEndEffector, ltarget3, speed=0.01, orientation=[0,0,1], 
-        threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(leftEndEffector, ltarget2, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(rightEndEffector, rtarget2, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+
+
+    # # sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=[0,0,1], 
+    # #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(rightEndEffector, rtarget3, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(leftEndEffector, ltarget3, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
     
 
 tableId, cubeId, targetId = getReadyForTask()
