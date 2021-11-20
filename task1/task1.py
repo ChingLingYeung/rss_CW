@@ -69,12 +69,12 @@ ref = [0, 0, 1]
 sim = Simulation(pybulletConfigs, robotConfigs, refVect=ref)
 
 endEffector = "LHAND"
-# targetPosition = np.array([0.5, -0.2, 1.1])
-targetPosition = np.array([0.37, 0.23, 1.06385])
+targetPosition = np.array([0.5, -0.2, 1.1])
+# targetPosition = np.array([0.37, 0.23, 1.06385])
 # targetPosition = np.array([0.23, 0, 1])
 
-targetOrientation = None
-# targetOrientation = np.array([1, 0, 0]) #negative?
+# targetOrientation = None
+targetOrientation = np.array([1, 0, 0])
 # targetOrientation = np.array([0, 1, 0])
 # targetOrientation = np.array([0, 0, 1])
 
