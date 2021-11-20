@@ -73,9 +73,9 @@ endEffector = "LHAND"
 targetPosition = np.array([0.37, 0.23, 1.06385])
 # targetPosition = np.array([0.23, 0, 1])
 
-# targetOrientation = np.array([1, 0, 0]) #negative?
+targetOrientation = np.array([1, 0, 0]) #negative?
 # targetOrientation = np.array([0, 1, 0])
-targetOrientation = np.array([0, 0, 1])
+# targetOrientation = np.array([0, 0, 1])
 
 # initPosition = sim.getJointPosition("LARM_JOINT5")
 # print(sim.calIterToTarget(initPosition, targetPosition, 0.01))
@@ -83,7 +83,7 @@ targetOrientation = np.array([0, 0, 1])
 # pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=None, threshold=1e-3, maxIter=3000, debug=False, verbose=False)
 # pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=None, threshold=1e-3, maxIter=500, debug=False, verbose=False)
 # pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=500, debug=False, verbose=False)
-pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=3000, debug=False, verbose=False)
+pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=500, debug=False, verbose=False)
 
 # Now plot some graphs
 task1_figure_name = "task1_kinematics.png"
