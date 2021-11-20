@@ -445,7 +445,18 @@ class Simulation(Simulation_base):
         if orientation is None:
             radTheta = (np.linalg.pinv(J_geo) @ deltaPosition) 
         else:
-            deltaOrientation = orientation - endEffectorOrientation
+            orientation = np.nan_to_num(super().normaliseVector(orientation))
+            endEffectorOrientation = np.nan_to_num(super().normaliseVector(endEffectorOrientation))
+
+            #https://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python
+            angleBtwnOr = np.arccos(np.clip(np.dot(orientation, endEffectorOrientation), -1.0, 1.0))
+
+            deltaOrientation = (orientation - endEffectorOrientation) * angleBtwnOr
+            # deltaOrientation = orientation - endEffectorOrientation
+
+            # deltaOrientation = np.nan_to_num(super().normaliseVector(orientation)) - np.nan_to_num(super().normaliseVector(endEffectorOrientation))
+            # deltaOrientation = np.nan_to_num(super().normaliseVector(deltaOrientation))
+            # print(deltaOrientation)
             # deltaOrientation = orientation - efEuler
             deltas = np.hstack((deltaPosition, deltaOrientation))           
             # print(deltaOrientation)
@@ -456,13 +467,24 @@ class Simulation(Simulation_base):
             current = np.hstack((endEffectorPos, endEffectorOrientation))
             
             error = np.linalg.norm(weightedTarget - current)
-            # error = np.linalg.norm(targetPosition - endEffectorPos)
 
-            # error2 = np.linalg.norm(targetPosition - endEffectorPos) + np.linalg.norm(orientation - endEffectorOrientation)
-            errorPos = np.linalg.norm(targetPosition - endEffectorPos)# + np.linalg.norm(orientation - endEffectorOrientation)
-            errorOr = np.linalg.norm(orientation - endEffectorOrientation) #* 0.01
+            errorPos = np.linalg.norm(targetPosition - endEffectorPos)
 
-            radTheta = (np.linalg.pinv(J) @ deltas) * error
+            normalOr = np.nan_to_num(super().normaliseVector(orientation))
+            efOr = np.nan_to_num(super().normaliseVector(endEffectorOrientation))
+            normDiff = np.nan_to_num(super().normaliseVector(orientation-endEffectorOrientation))
+            errorOr = np.linalg.norm(normalOr - efOr)
+            
+            errorDiff = np.linalg.norm(np.nan_to_num(normDiff))
+            # errorOr = np.linalg.norm(orientation - endEffectorOrientation) #* 0.01
+
+            errorSum = errorPos + errorOr
+            # print(errorPos)
+            # print(errorOr)
+            # print(errorSum)
+            # input()
+
+            radTheta = (np.linalg.pinv(J) @ deltas) * errorSum
 
             # radTheta1 = (np.linalg.pinv(J_geo) @ deltaPosition) * errorPos
             # radTheta2 = (np.linalg.pinv(J_rot) @ deltaOrientation) * errorOr #* errorPos# * errorOr
@@ -503,6 +525,16 @@ class Simulation(Simulation_base):
             # target = np.hstack((targetPosition, np.multiply(orientation, 0.001)))
             initPose = np.hstack((initPosition, initOrientation))
             target = np.hstack((targetPosition, orientation))
+
+            orientation = np.nan_to_num(super().normaliseVector(orientation))
+            endEffectorOrientation = np.nan_to_num(super().normaliseVector(initOrientation))
+
+            #https://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python
+            angleBtwnOr = np.arccos(np.clip(np.dot(orientation, endEffectorOrientation), -1.0, 1.0))
+
+            errorOr = np.linalg.norm(orientation - endEffectorOrientation)
+            
+            error = error + errorOr
             # error = np.linalg.norm(target - initPose)
 
             
@@ -566,17 +598,23 @@ class Simulation(Simulation_base):
                 #     print("radian")
                 #     print(angle)
                 # error = np.linalg.norm(target - currentPose)
+                normalOr = super().normaliseVector(orientation)
+                efOr = super().normaliseVector(endEffectorOrientation)
+                errorOr = np.linalg.norm(normalOr - efOr)
+                error = error + errorOr
             
             # print(curIter)
             if error < min_error:
                 print("min error")
                 print(error)
+                # print(endEffectorOrientation)
+
                 min_error = error
             curIter += 1
             pltTime.append(curIter)
             pltDistance.append(error)
 
-        print(endEffectorOrientation)
+        # print(endEffectorOrientation)
 
         return pltTime, pltDistance
 
@@ -732,6 +770,11 @@ class Simulation(Simulation_base):
 
         if orientation is not None:
             step_orientations = np.linspace(initOrientation, orientation, maxIter)
+            orientation = np.nan_to_num(super().normaliseVector(orientation))
+            endEffectorOrientation = np.nan_to_num(super().normaliseVector(initOrientation))
+
+            errorOr = np.linalg.norm(orientation - endEffectorOrientation)
+            error = error + errorOr
 
         for i in range(maxIter):
             if error <= threshold:
@@ -766,6 +809,13 @@ class Simulation(Simulation_base):
                 endEffectorPos = self.getJointPosition("RARM_JOINT5")
 
             error = np.linalg.norm(targetPosition - endEffectorPos)
+
+            if orientation is not None:
+                normalOr = super().normaliseVector(orientation)
+                efOr = super().normaliseVector(endEffectorOrientation)
+                errorOr = np.linalg.norm(normalOr - efOr)
+                error = error + errorOr
+
             print(curIter)
             print("error")
             print(error)
