@@ -116,12 +116,24 @@ def solution():
     print("target 3")
     time.sleep(1)
 
+    # target0 = np.array([startPos[0], startPos[1], 1.3])
+    target1 = np.array([0.2, startPos[1], 1])
+    target2 = np.array([0.15, 0, 1])
+    target3 = finalTargetPos - [0.13, 0, 0.95]
+
+    # sim.move_with_PD(endEffector, target0, speed=0.01, orientation=None, 
+        # threshold=1e-3, maxIter=1000, debug=False, verbose=False)
     # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=[0,0,1], 
+    #     threshold=1e-3, maxIter=5000, debug=False, verbose=False)
+    # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
     #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=None, 
+    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    # input()
     # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=[0,0,1], 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    #     threshold=1e-3, maxIter=2500, debug=False, verbose=False)
     # sim.move_with_PD(endEffector, target3, speed=0.01, orientation=[0,0,1], 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
+    #     threshold=1e-3, maxIter=5000, debug=False, verbose=False)
 
 tableId, cubeId, targetId = getReadyForTask()
 solution()
