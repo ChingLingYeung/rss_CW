@@ -73,6 +73,9 @@ class Simulation(Simulation_base):
         'RARM_JOINT5': np.array([0, 0, -0.1335])
     }
 
+    robotJoints = ["CHEST_JOINT0", "HEAD_JOINT0", "HEAD_JOINT1", "LARM_JOINT0", "LARM_JOINT1", 'LARM_JOINT2', 'LARM_JOINT3',
+        'LARM_JOINT4', 'LARM_JOINT5','RARM_JOINT0', 'RARM_JOINT1', 'RARM_JOINT2','RARM_JOINT3','RARM_JOINT4','RARM_JOINT5']
+
     def getJointRotationalMatrix(self, jointName=None, theta=None):
         """
             Returns the 3x3 rotation matrix for a joint from the axis-angle representation,
@@ -380,6 +383,57 @@ class Simulation(Simulation_base):
         # j_geo, j_rot =  bullet_simulation.calculateJacobian(bodyUniqueId, linkIndex, com_trn, objPositions, objVelocities, objAccelerations)
         return j_geo, j_rot
 
+    def newJacobian(self, endEffector):
+        if endEffector == 'RHAND':
+            jointName = "RARM_JOINT5"
+            localPosition = self.getJointPosition("RARM_JOINT5")
+        elif endEffector == 'LHAND':
+            jointName = "LARM_JOINT5"
+            localPosition = self.getJointPosition("LARM_JOINT5")
+        else:
+            raise Exception("[jacobianMatrix \
+                endEffector not valid]")
+
+        aeff = self.getJointAxis(jointName)
+        peff = np.array(localPosition)
+
+        jPos = [[],[],[]]
+        jVec = [[],[],[]]
+
+        for j in self.robotJoints:
+            # print(j)
+            ai = self.getJointAxis(j)
+            pi = np.array(self.getJointPosition(j))
+            # refVec?
+            # orientation instead?
+            
+            # print(peff)
+            # print(pi)
+            pdiff = peff - pi
+            crossPos = np.cross(ai, pdiff)
+            # crossPosT = np.array([np.cross(ai, pdiff)]).T
+            # print(cross1)
+
+            # jPos = np.column_stack((jPos, crossPos))
+            jPos = np.c_[jPos, crossPos]
+            # jPos.append(crossPos)
+            # jPos = np.hstack((jPos,cross1))
+
+            crossVec = np.cross(ai, aeff)
+            # crossVecT = np.array([np.cross(ai, aeff)]).T
+
+            # jVec = np.column_stack((jVec,crossVec))
+            jVec = np.c_[jVec, crossVec]
+            # jVec.append(crossVec)
+            # jVec = np.hstack((jVec, crossVec))
+
+        
+        # print(jPos)
+        # print(jPos.shape)
+        # print(jVec.shape)
+        return jPos, jVec
+
+
     # Task 1.2 Inverse Kinematics
 
     def inverseKinematics(self, endEffector, targetPosition, orientation, frame=None):
@@ -437,7 +491,9 @@ class Simulation(Simulation_base):
         super().getJointPos('RARM_JOINT5')]
 
 
-        J_geo, J_rot = self.jacobianMatrix(endEffector)
+        # J_geo, J_rot = self.jacobianMatrix(endEffector)
+        J_geo, J_rot = self.newJacobian(endEffector)
+
         J = np.vstack((J_geo, J_rot))
 
         deltaPosition = targetPosition - endEffectorPos           
@@ -451,7 +507,7 @@ class Simulation(Simulation_base):
             #https://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python
             angleBtwnOr = np.arccos(np.clip(np.dot(orientation, endEffectorOrientation), -1.0, 1.0))
 
-            deltaOrientation = (orientation - endEffectorOrientation) * angleBtwnOr
+            deltaOrientation = (orientation - endEffectorOrientation) * np.absolute(angleBtwnOr)
             # deltaOrientation = orientation - endEffectorOrientation
 
             # deltaOrientation = np.nan_to_num(super().normaliseVector(orientation)) - np.nan_to_num(super().normaliseVector(endEffectorOrientation))
@@ -521,16 +577,8 @@ class Simulation(Simulation_base):
         # print(np.array(initOrientation))
 
         if orientation is not None:
-            # initPose = np.hstack((initPosition, np.multiply(initOrientation, 0.001)))
-            # target = np.hstack((targetPosition, np.multiply(orientation, 0.001)))
-            initPose = np.hstack((initPosition, initOrientation))
-            target = np.hstack((targetPosition, orientation))
-
             orientation = np.nan_to_num(super().normaliseVector(orientation))
             endEffectorOrientation = np.nan_to_num(super().normaliseVector(initOrientation))
-
-            #https://stackoverflow.com/questions/2827393/angles-between-two-n-dimensional-vectors-in-python
-            angleBtwnOr = np.arccos(np.clip(np.dot(orientation, endEffectorOrientation), -1.0, 1.0))
 
             errorOr = np.linalg.norm(orientation - endEffectorOrientation)
             
@@ -805,8 +853,10 @@ class Simulation(Simulation_base):
 
             if endEffector == 'LHAND':
                 endEffectorPos = self.getJointPosition("LARM_JOINT5")
+                endEffectorOrientation = self.getJointOrientation("LARM_JOINT5")
             elif endEffector == 'RHAND':
                 endEffectorPos = self.getJointPosition("RARM_JOINT5")
+                endEffectorOrientation = self.getJointOrientation("RARM_JOINT5")
 
             error = np.linalg.norm(targetPosition - endEffectorPos)
 
