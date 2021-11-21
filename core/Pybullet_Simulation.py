@@ -340,29 +340,26 @@ class Simulation(Simulation_base):
         else:
             raise Exception("[jacobianMatrix \
                 endEffector not valid]")
-        
+
+        aeff = self.getJointAxis(jointName)
+        jVec = [[],[],[]]
+
         #objPositions = joint positions
-        objPositions = [
-        super().getJointPos('CHEST_JOINT0'),
-        super().getJointPos('HEAD_JOINT0'),
-        super().getJointPos('HEAD_JOINT1'),
-        super().getJointPos('LARM_JOINT0'),
-        super().getJointPos('LARM_JOINT1'), 
-        super().getJointPos('LARM_JOINT2'),
-        super().getJointPos('LARM_JOINT3'),
-        super().getJointPos('LARM_JOINT4'),
-        super().getJointPos('LARM_JOINT5'),
-        super().getJointPos('RARM_JOINT0'),
-        super().getJointPos('RARM_JOINT1'),
-        super().getJointPos('RARM_JOINT2'),
-        super().getJointPos('RARM_JOINT3'),
-        super().getJointPos('RARM_JOINT4'),
-        super().getJointPos('RARM_JOINT5')]
+        objPositions = []
+
+        for j in self.robotJoints:
+            objPositions.append(super().getJointPos(j))
+
+
         zeroVec = [0.0] * (len(self.joints) - 2)
         objVelocities = zeroVec
         objAccelerations = zeroVec
 
-        
+        for j in self.robotJoints:
+            ai = self.getJointAxis(j)
+            crossVec = np.cross(ai, aeff)
+            jVec = np.c_[jVec, crossVec]
+
         # needed to use getLinkState() to get center of mass for calculateJacobian()
         com = self.getLinkState(jointName)[2]
 
@@ -382,6 +379,7 @@ class Simulation(Simulation_base):
         j_geo, j_rot =  bullet_simulation.calculateJacobian(bodyUniqueId, linkIndex, com, objPositions, objVelocities, objAccelerations)
         # j_geo, j_rot =  bullet_simulation.calculateJacobian(bodyUniqueId, linkIndex, com_trn, objPositions, objVelocities, objAccelerations)
         return j_geo, j_rot
+        #return j_geo, j_Vec
 
     def newJacobian(self, endEffector):
         if endEffector == 'RHAND':
@@ -473,26 +471,14 @@ class Simulation(Simulation_base):
         # input()
 
         # current joint angles
-        newTheta = [
-        super().getJointPos('CHEST_JOINT0'),
-        super().getJointPos('HEAD_JOINT0'),
-        super().getJointPos('HEAD_JOINT1'),
-        super().getJointPos('LARM_JOINT0'),
-        super().getJointPos('LARM_JOINT1'), 
-        super().getJointPos('LARM_JOINT2'),
-        super().getJointPos('LARM_JOINT3'),
-        super().getJointPos('LARM_JOINT4'),
-        super().getJointPos('LARM_JOINT5'),
-        super().getJointPos('RARM_JOINT0'),
-        super().getJointPos('RARM_JOINT1'),
-        super().getJointPos('RARM_JOINT2'),
-        super().getJointPos('RARM_JOINT3'),
-        super().getJointPos('RARM_JOINT4'),
-        super().getJointPos('RARM_JOINT5')]
+        newTheta = []
+
+        for j in self.robotJoints:
+            newTheta.append(super().getJointPos(j))
 
 
         # J_geo, J_rot = self.jacobianMatrix(endEffector)
-        J_geo, J_rot = self.newJacobian(endEffector)
+        J_geo, J_rot = self.jacobianMatrix(endEffector)
 
         J = np.vstack((J_geo, J_rot))
 
@@ -572,9 +558,7 @@ class Simulation(Simulation_base):
                 end effector not valid]")
         
         error = np.linalg.norm(targetPosition - initPosition)
-        # initOrientation = np.multiply(initOrientation, 0.01)
-        # print(initOrientation)
-        # print(np.array(initOrientation))
+        errorPos = np.linalg.norm(targetPosition - initPosition)
 
         if orientation is not None:
             orientation = np.nan_to_num(super().normaliseVector(orientation))
@@ -606,24 +590,11 @@ class Simulation(Simulation_base):
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], orientation)
             else:
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], step_orientations[i, :])
-            self.jointTargetPos["CHEST_JOINT0"] = x_refs[0]
-            self.jointTargetPos["HEAD_JOINT0"] = x_refs[1]
-            self.jointTargetPos["HEAD_JOINT1"] = x_refs[2]
-            self.jointTargetPos["LARM_JOINT0"] = x_refs[3]
-            self.jointTargetPos["LARM_JOINT1"] = x_refs[4]
-            self.jointTargetPos["LARM_JOINT2"] = x_refs[5]
-            self.jointTargetPos["LARM_JOINT3"] = x_refs[6]
-            self.jointTargetPos["LARM_JOINT4"] = x_refs[7]
-            self.jointTargetPos["LARM_JOINT5"] = x_refs[8]
-            self.jointTargetPos["RARM_JOINT0"] = x_refs[9]
-            self.jointTargetPos["RARM_JOINT1"] = x_refs[10]
-            self.jointTargetPos["RARM_JOINT2"] = x_refs[11]
-            self.jointTargetPos["RARM_JOINT3"] = x_refs[12]
-            self.jointTargetPos["RARM_JOINT4"] = x_refs[13]
-            self.jointTargetPos["RARM_JOINT5"] = x_refs[14]
+
+            for i in range(len(self.robotJoints)):
+                self.jointTargetPos[self.robotJoints[i]] = x_refs[i]
 
             self.tick_without_PD()
-            # input()
 
             if endEffector == 'LHAND':
                 endEffectorPos = self.getJointPosition("LARM_JOINT5")
@@ -634,6 +605,7 @@ class Simulation(Simulation_base):
 
 
             error = np.linalg.norm(targetPosition - endEffectorPos)
+            errorPos = np.linalg.norm(targetPosition - endEffectorPos)
 
             if orientation is not None:
                 # currentPose = np.hstack((endEffectorPos, np.multiply(endEffectorOrientation, 0.001)))
@@ -660,7 +632,7 @@ class Simulation(Simulation_base):
                 min_error = error
             curIter += 1
             pltTime.append(curIter)
-            pltDistance.append(error)
+            pltDistance.append(errorPos)
 
         # print(endEffectorOrientation)
 
@@ -671,21 +643,8 @@ class Simulation(Simulation_base):
         # TODO modify from here
         # Iterate through all joints and update joint states. 
             # For each joint, you can use the shared variable self.jointTargetPos.
-        bullet_simulation.resetJointState(self.robot, self.jointIds["CHEST_JOINT0"], self.jointTargetPos["CHEST_JOINT0"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["HEAD_JOINT0"], self.jointTargetPos["HEAD_JOINT0"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["HEAD_JOINT1"], self.jointTargetPos["HEAD_JOINT1"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT0"], self.jointTargetPos["LARM_JOINT0"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT1"], self.jointTargetPos["LARM_JOINT1"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT2"], self.jointTargetPos["LARM_JOINT2"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT3"], self.jointTargetPos["LARM_JOINT3"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT4"], self.jointTargetPos["LARM_JOINT4"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["LARM_JOINT5"], self.jointTargetPos["LARM_JOINT5"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT0"], self.jointTargetPos["RARM_JOINT0"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT1"], self.jointTargetPos["RARM_JOINT1"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT2"], self.jointTargetPos["RARM_JOINT2"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT3"], self.jointTargetPos["RARM_JOINT3"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT4"], self.jointTargetPos["RARM_JOINT4"])
-        bullet_simulation.resetJointState(self.robot, self.jointIds["RARM_JOINT5"], self.jointTargetPos["RARM_JOINT5"])
+        for j in self.robotJoints:
+            bullet_simulation.resetJointState(self.robot, self.jointIds[j], self.jointTargetPos[j])
         
         self.p.stepSimulation()
         self.drawDebugLines()
