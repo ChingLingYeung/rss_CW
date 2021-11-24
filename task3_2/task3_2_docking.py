@@ -105,7 +105,10 @@ def solution():
     leftStartPos = sim.getJointPosition('LARM_JOINT5')
     rightStartPos = sim.getJointPosition('RARM_JOINT5')
     cubePos = np.array([0.5, 0, 1.1])
-    
+
+    ltarget0 = np.array([cubePos[0], cubePos[1] + 0.2, cubePos[2]-0.02])
+    rtarget0 = np.array([cubePos[0]-0.2, cubePos[1] - 0.2, cubePos[2]-0.02])
+
     ltarget1 = np.array([cubePos[0], cubePos[1] + 0.025, cubePos[2]-0.02])
     rtarget1 = np.array([cubePos[0], cubePos[1] - 0.025, cubePos[2]-0.02])
     ltarget2 = np.array([leftStartPos[0], leftStartPos[1] - 0.2, leftStartPos[2] + 0.3])
@@ -117,7 +120,7 @@ def solution():
     leftEndEffector = 'LHAND'
     rightEndEffector = 'RHAND'
 
-    sim.move_with_PD(leftEndEffector, ltarget1, speed=0.01, orientation=None, 
+    sim.move_with_PD(leftEndEffector, ltarget0, speed=0.01, orientation=[0,-1,0], 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
     sim.move_with_PD(rightEndEffector, rtarget1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
@@ -143,14 +146,15 @@ def solution():
         ltarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([0.001, -0.001, 0], 2*i)
         rtarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([-0.001, 0.001, 0], 2*i)
         sim.move_with_PD(leftEndEffector, ltarget3, speed=0.01, orientation=None, 
-            threshold=1e-3, maxIter=25, debug=False, verbose=False)
+            threshold=1e-3, maxIter=30, debug=False, verbose=False)
         sim.move_with_PD(rightEndEffector, rtarget3, speed=0.01, orientation=None, 
-            threshold=1e-3, maxIter=25, debug=False, verbose=False)
+            threshold=1e-3, maxIter=30, debug=False, verbose=False)
+        # print(i)
 
     
-    print("target3")
-    time.sleep(3)
-    input()
+    # print("target3")
+    # time.sleep(3)
+    # input()
 
     for i in range(25):
         # ltarget4 = np.array([finalTargetPos[0] - 0.01, finalTargetPos[1] + 0.01, finalTargetPos[2] + (0.01 * (25 - i))])
@@ -166,8 +170,8 @@ def solution():
         
         
 
-    print("target4")
-    time.sleep(3)
+    # print("target4")
+    # time.sleep(3)
         
 
 
@@ -196,5 +200,8 @@ def solution():
 
 tableId, cubeId, targetId = getReadyForTask()
 solution()
-input()
+# input()
+finalCubePos, finalCubeOr = sim.p.getBasePositionAndOrientation(cubeId)
+distance = np.linalg.norm(finalTargetPos - finalCubePos)*1000
+print(distance)
 # time.sleep(5)
