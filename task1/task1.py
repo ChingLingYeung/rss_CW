@@ -53,18 +53,6 @@ debugLine = True
 
 
 # TODO: Add your code here to start simulation
-# simulation = Simulation(pybulletConfigs, robotConfigs)
-# print(simulation.getJointLocationAndOrientation("CHEST_JOINT0"))
-# print(bullet_simulation.getJointState(simulation.robot, simulation.jointIds["CHEST_JOINT0"]))
-# print("RARM")
-# print(simulation.getJointLocationAndOrientation("RARM_JOINT5"))
-# print(bullet_simulation.getJointState(simulation.robot, simulation.jointIds["RARM_JOINT0"]))
-# print(simulation.robot)
-# print(simulation.joints)
-# print(len(simulation.joints) - 2)
-# print(simulation.getJointAxis('CHEST_JOINT0'))
-# print(simulation.jacobianMatrix('RHAND'))
-
 ref = [0, 0, 1]
 sim = Simulation(pybulletConfigs, robotConfigs, refVect=ref)
 
@@ -73,17 +61,13 @@ targetPosition = np.array([0.5, -0.2, 1.1])
 # targetPosition = np.array([0.37, 0.23, 1.06385])
 # targetPosition = np.array([0.23, 0, 1])
 
+# For testing IK with orientation
 # targetOrientation = None
 targetOrientation = np.array([1, 0, 0])
 # targetOrientation = np.array([0, 1, 0])
 # targetOrientation = np.array([0, 0, 1])
 
-# initPosition = sim.getJointPosition("LARM_JOINT5")
-# print(sim.calIterToTarget(initPosition, targetPosition, 0.01))
 # Example code. Feel free to modify
-# pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=None, threshold=1e-3, maxIter=3000, debug=False, verbose=False)
-# pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=None, threshold=1e-3, maxIter=500, debug=False, verbose=False)
-# pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=500, debug=False, verbose=False)
 pltTime, pltEFPosition = sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=1000, debug=False, verbose=False)
 
 # Now plot some graphs
@@ -104,8 +88,3 @@ plt.subplots_adjust(left=0.15)
 if task1_savefig:
     fig.savefig(task1_figure_name)
 plt.show()
-
-# targetOrientation = np.array([1, 0, 0])
-# sim.move_without_PD(endEffector, targetPosition, speed=0.01, orientation=targetOrientation, threshold=1e-3, maxIter=500, debug=False, verbose=False)
-
-

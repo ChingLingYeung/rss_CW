@@ -96,46 +96,13 @@ def solution():
     
     target1 = np.array([0.1, startPos[1], startPos[2]])
     target2 = np.array([0.1, cubePos[1]+0.05, 0.9])
-    # target3 = finalTargetPos - [0.13, 0.0, 0]
     target3 = np.array([finalTargetPos[0] - 0.1, finalTargetPos[1]-0.05, 0.9])
     target4 = np.array([target3[0] - 0.1, target3[1], 0.9])
 
-
-
-    # target1 = np.array([0.22, 0.22, .95])
-    # target2 = np.array([0.22, 0.0, .94])
-    # target3 = np.array([0.63, 0.0, .94])
-
     endEffector = 'LHAND'
-    # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # print("target 1")
-    # time.sleep(1)
-    # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=None, 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # print("target 2")
-    # time.sleep(1)
-    # sim.move_with_PD(endEffector, target3, speed=0.01, orientation=None, 
-    #     threshold=1e-3, maxIter=1000, debug=False, verbose=False)
-    # print("target 3")
-    # time.sleep(1)
 
-    # # target0 = np.array([startPos[0], startPos[1], 1.3])
-    # target1 = np.array([0.2, startPos[1], 0.95])
-    # target2 = np.array([0.15, 0, 0.95])
-    # # target3 = finalTargetPos - [0.13, 0, 0]
-    # target3 = np.array([finalTargetPos[0] - 0.1, 0, 0.95])
-
-
-    # sim.move_with_PD(endEffector, target0, speed=0.01, orientation=None, 
-    #     threshold=1e-3, maxIter=1000, debug=False, verbose=False)
     sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
-    # #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=None, 
-    # #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # input()
     sim.move_with_PD(endEffector, target2, speed=0.01, orientation=[0,-1,0], 
         threshold=1e-3, maxIter=1000, debug=False, verbose=False)
     sim.move_with_PD(endEffector, target3, speed=0.01, orientation=[0,-1,0], 
@@ -143,22 +110,9 @@ def solution():
     sim.move_with_PD(endEffector, target4, speed=0.01, orientation=None, 
         threshold=1e-3, maxIter=250, debug=False, verbose=False)
 
-    # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # sim.move_with_PD(endEffector, target1, speed=0.01, orientation=None, 
-    # #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=None, 
-    # #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # # input()
-    # sim.move_with_PD(endEffector, target2, speed=0.01, orientation=[0,0,1], 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-    # sim.move_with_PD(endEffector, target3, speed=0.01, orientation=[0,0,1], 
-    #     threshold=1e-3, maxIter=500, debug=False, verbose=False)
-
-
 tableId, cubeId, targetId = getReadyForTask()
 solution()
 time.sleep(5)
 finalCubePos, finalCubeOr = sim.p.getBasePositionAndOrientation(cubeId)
-print(finalCubePos)
 distance = np.linalg.norm(finalTargetPos - finalCubePos)*1000
 print(distance)

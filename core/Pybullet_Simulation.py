@@ -85,22 +85,7 @@ class Simulation(Simulation_base):
             raise Exception("[getJointRotationalMatrix] \
                 Must provide a joint in order to compute the rotational matrix!") 
         # TODO modify from here
-        # rotXMat = np.matrix([
-        #         [1, 0, 0],
-        #         [0, np.cos(theta), -np.sin(theta)],
-        #         [0, np.sin(theta), np.cos(theta)]
-        #     ])
-        # rotYMat = np.matrix([
-        #         [np.cos(theta), 0, np.sin(theta)],
-        #         [0, 1, 0],
-        #         [-np.sin(theta), 0, np.cos(theta)]
-        #     ])
-        # rotZMat = np.matrix([
-        #         [np.cos(theta), -np.sin(theta), 0],
-        #         [np.sin(theta), np.cos(theta), 0],
-        #         [0, 0, 1]
-        #     ])
-        
+                
         if jointName == "CHEST_JOINT0":
             theta = super().getJointPos("CHEST_JOINT0")
             return np.matrix([
@@ -363,17 +348,10 @@ class Simulation(Simulation_base):
         # needed to use getLinkState() to get center of mass for calculateJacobian()
         com = self.getLinkState(jointName)[2]
 
-        #used for debugging purposes
-        # result = bullet_simulation.getLinkState(self.robot,
-        #                 linkIndex,
-        #                 computeLinkVelocity=1,
-        #                 computeForwardKinematics=1)
-        # link_trn, link_rot, com_trn, com_rot, frame_pos, frame_rot, link_vt, link_vr = result
-
         j_geo, j_rot =  bullet_simulation.calculateJacobian(bodyUniqueId, linkIndex, com, objPositions, objVelocities, objAccelerations)
         return j_geo, j_rot
-        #return j_geo, j_Vec
 
+    # implementation of Jacobian using cross product (not used in the tasks)
     def newJacobian(self, endEffector):
         if endEffector == 'RHAND':
             jointName = "RARM_JOINT5"
@@ -444,6 +422,7 @@ class Simulation(Simulation_base):
         for j in self.robotJoints:
             newTheta.append(super().getJointPos(j))
 
+        # get Jacobian matrices
         J_geo, J_rot = self.jacobianMatrix(endEffector)
         J = np.vstack((J_geo, J_rot))
 
@@ -452,6 +431,7 @@ class Simulation(Simulation_base):
         if orientation is None:
             radTheta = (np.linalg.pinv(J_geo) @ deltaPosition) 
         else:
+            # need to take into account orientation
             orientation = np.nan_to_num(super().normaliseVector(orientation))
             endEffectorOrientation = np.nan_to_num(super().normaliseVector(endEffectorOrientation))
 
@@ -462,19 +442,16 @@ class Simulation(Simulation_base):
 
             deltas = np.hstack((deltaPosition, deltaOrientation))           
 
-            weightedTarget = np.hstack((targetPosition, orientation))
-            current = np.hstack((endEffectorPos, endEffectorOrientation))
+            # weightedTarget = np.hstack((targetPosition, orientation))
+            # current = np.hstack((endEffectorPos, endEffectorOrientation))
             
-            error = np.linalg.norm(weightedTarget - current)
+            # error = np.linalg.norm(weightedTarget - current)
 
             errorPos = np.linalg.norm(targetPosition - endEffectorPos)
 
             normalOr = np.nan_to_num(super().normaliseVector(orientation))
             efOr = np.nan_to_num(super().normaliseVector(endEffectorOrientation))
-            normDiff = np.nan_to_num(super().normaliseVector(orientation-endEffectorOrientation))
-            errorOr = np.linalg.norm(normalOr - efOr)
-            
-            errorDiff = np.linalg.norm(np.nan_to_num(normDiff))
+            errorOr = np.linalg.norm(normalOr - efOr)           
 
             errorSum = errorPos + errorOr
 
@@ -520,23 +497,24 @@ class Simulation(Simulation_base):
         pltTime = []
         pltDistance = []
 
+        # checkpoints to target position / orientation
         step_positions = np.linspace(initPosition, targetPosition, maxIter)
 
         if orientation is not None:
             step_orientations = np.linspace(initOrientation, orientation, maxIter)
-
-        min_error = 9
 
         for i in range(maxIter):
             if error <= threshold:
                 break
             
             # TODO: might need to verify if jointTargetPos is valid
+            # get new joint angles
             if orientation is None:
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], orientation)
             else:
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], step_orientations[i, :])
 
+            # update joint angle variable (actual update occurs in the tick function)
             for i in range(len(self.robotJoints)):
                 self.jointTargetPos[self.robotJoints[i]] = x_refs[i]
 
@@ -550,6 +528,7 @@ class Simulation(Simulation_base):
                 endEffectorOrientation = self.getJointOrientation("RARM_JOINT5")
 
 
+            # calculate error
             error = np.linalg.norm(targetPosition - endEffectorPos)
             errorPos = np.linalg.norm(targetPosition - endEffectorPos)
 
@@ -569,11 +548,6 @@ class Simulation(Simulation_base):
                 errorOr = np.linalg.norm(normalOr - efOr)
                 error = error + errorOr
 
-            if error < min_error:
-                print("min error")
-                print(error)
-
-                min_error = error
             curIter += 1
             pltTime.append(curIter)
             pltDistance.append(errorPos)
@@ -663,25 +637,29 @@ class Simulation(Simulation_base):
 
         self.disableVelocityController(joint)
 
-        #TODO: delete while
+        #TODO: delete while loop used for task 2 graph
         endTime = 10
-        while curTime < endTime:
-            xReal = self.getJointPos(joint)
-            e = targetPosition - xReal
-            de = (e - eOld)/(self.dt * controlCycles)
+        # while curTime < endTime:
+        xReal = self.getJointPos(joint)
+        e = targetPosition - xReal
+        de = (e - eOld)/(self.dt * controlCycles)
+        oldPos = self.getJointPos(joint)
 
-            for i in range(controlCycles):
-                # calculate
-                toy_tick(targetPosition, xReal, targetVelocity, self.getJointVel(joint), 0)
-                pltTime.append(curTime)
-                pltTarget.append(targetPosition)
-                pltPosition.append(self.getJointPos(joint))
-                pltVelocity.append(self.getJointVel(joint))
-                pltTorqueTime.append(curTime)
-            
-            xOld = xReal
-            eOld = e
-            curTime += controlCycles * self.dt        
+        for i in range(controlCycles):
+            # calculate
+            toy_tick(targetPosition, xReal, targetVelocity, self.getJointVel(joint), 0)
+            pltTime.append(curTime)
+            pltTarget.append(targetPosition)
+            pltPosition.append(self.getJointPos(joint))
+            vel = (self.getJointPos(joint) - oldPos) / self.dt
+            pltVelocity.append(vel)
+            #TODO: test equality
+            # pltVelocity.append(self.getJointVel(joint))
+            pltTorqueTime.append(curTime)
+        
+        xOld = xReal
+        eOld = e
+        curTime += controlCycles * self.dt        
 
         return pltTime, pltTarget, pltTorque, pltTorqueTime, pltPosition, pltVelocity
 
@@ -713,6 +691,7 @@ class Simulation(Simulation_base):
         pltTime = []
         pltDistance = []
 
+        # calculate checkpoints to target
         step_positions = np.linspace(initPosition, targetPosition, maxIter)
 
         if orientation is not None:
@@ -727,6 +706,7 @@ class Simulation(Simulation_base):
             if error <= threshold:
                 break
 
+            #get new joint angles
             if orientation is None:
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], orientation)
             else:
@@ -751,9 +731,6 @@ class Simulation(Simulation_base):
                 errorOr = np.linalg.norm(normalOr - efOr)
                 error = error + errorOr
 
-            print(curIter)
-            print("error")
-            print(error)
             curIter += 1
             pltTime.append(curIter)
             pltDistance.append(error)
@@ -778,7 +755,6 @@ class Simulation(Simulation_base):
             kd = self.ctrlConfig[jointController]['pid']['d']
 
             ### Implement your code from here ... ###
-            # TODO: obtain torque from PD controller
             x_ref = self.jointTargetPos[joint]
             x_real = self.getJointPos(joint)
             dx_ref = 0.0
