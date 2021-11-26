@@ -112,7 +112,9 @@ def solution():
 
 tableId, cubeId, targetId = getReadyForTask()
 solution()
-time.sleep(5)
+for _ in range(1000):
+        sim.tick()
+        time.sleep(1./1000)
 finalCubePos, finalCubeOr = sim.p.getBasePositionAndOrientation(cubeId)
 distance = np.linalg.norm(finalTargetPos - finalCubePos)*1000
 print(distance)
