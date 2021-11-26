@@ -639,27 +639,27 @@ class Simulation(Simulation_base):
 
         #TODO: delete while loop used for task 2 graph
         endTime = 10
-        # while curTime < endTime:
-        xReal = self.getJointPos(joint)
-        e = targetPosition - xReal
-        de = (e - eOld)/(self.dt * controlCycles)
-        oldPos = self.getJointPos(joint)
+        while curTime < endTime:
+            xReal = self.getJointPos(joint)
+            e = targetPosition - xReal
+            de = (e - eOld)/(self.dt * controlCycles)
+            oldPos = self.getJointPos(joint)
 
-        for i in range(controlCycles):
-            # calculate
-            toy_tick(targetPosition, xReal, targetVelocity, self.getJointVel(joint), 0)
-            pltTime.append(curTime)
-            pltTarget.append(targetPosition)
-            pltPosition.append(self.getJointPos(joint))
-            vel = (self.getJointPos(joint) - oldPos) / self.dt
-            pltVelocity.append(vel)
-            #TODO: test equality
-            # pltVelocity.append(self.getJointVel(joint))
-            pltTorqueTime.append(curTime)
-        
-        xOld = xReal
-        eOld = e
-        curTime += controlCycles * self.dt        
+            for i in range(controlCycles):
+                # calculate
+                vel = (self.getJointPos(joint) - oldPos) / self.dt
+                oldPos = self.getJointPos(joint)
+                toy_tick(targetPosition, xReal, targetVelocity, vel, 0)
+                pltTime.append(curTime)
+                pltTarget.append(targetPosition)
+                pltPosition.append(self.getJointPos(joint))
+                # vel = (self.getJointPos(joint) - oldPos) / self.dt
+                pltVelocity.append(vel)
+                pltTorqueTime.append(curTime)
+            
+            xOld = xReal
+            eOld = e
+            curTime += controlCycles * self.dt        
 
         return pltTime, pltTarget, pltTorque, pltTorqueTime, pltPosition, pltVelocity
 
@@ -740,6 +740,7 @@ class Simulation(Simulation_base):
     def tick(self):
         """Ticks one step of simulation using PD control."""
         # Iterate through all joints and update joint states using PD control. 
+        x_old = self.getJointPos(joint)
         for joint in self.joints:
             # skip dummy joints (world to base joint)
             jointController = self.jointControllers[joint]
@@ -758,8 +759,8 @@ class Simulation(Simulation_base):
             x_ref = self.jointTargetPos[joint]
             x_real = self.getJointPos(joint)
             dx_ref = 0.0
-            dx_real = self.getJointVel(joint)
-            torque = self.calculateTorque(x_ref, x_real, dx_ref, dx_real, 0, kp, ki, kd)
+            vel = (x_real - x_old)/self.dt
+            torque = self.calculateTorque(x_ref, x_real, dx_ref, vel, 0, kp, ki, kd)
             
             ### ... to here ###
 
