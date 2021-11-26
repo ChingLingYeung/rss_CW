@@ -148,9 +148,6 @@ def solution():
     r3 = np.array(sim.getJointPosition("RARM_JOINT5"))
 
     for i in range(10):
-        # ltarget4 = np.array([ltarget3[0]-0.01, ltarget3[1]-0.01, finalTargetPos[2] + (0.005 * (50 - i))])
-        # rtarget4 = np.array([rtarget3[0]+0.01, rtarget3[1]+0.01, finalTargetPos[2] + (0.005 * (50 - i))])
-
         ltarget4 = np.array([l3[0], l3[1], finalTargetPos[2] + (0.005 * (10 - i))])
         rtarget4 = np.array([r3[0]+0.05, r3[1]+0.05, finalTargetPos[2] + (0.005 * (10 - i))])
         
@@ -158,12 +155,15 @@ def solution():
             threshold=1e-3, maxIter=50, debug=False, verbose=False)
         sim.move_with_PD(leftEndEffector, ltarget4, speed=0.01, orientation=None, 
             threshold=1e-3, maxIter=50, debug=False, verbose=False)
+
+    ltarget4 = np.array([0, ltarget4[1], ltarget4[2]])
+    sim.move_with_PD(rightEndEffector, rtarget4, speed=0.01, orientation=None, 
+            threshold=1e-3, maxIter=5000, debug=False, verbose=False)
         
             
-
 tableId, cubeId, targetId = getReadyForTask()
 solution()
-for _ in range(1000):
+for _ in range(10000):
         sim.tick()
         time.sleep(1./1000)
 finalCubePos, finalCubeOr = sim.p.getBasePositionAndOrientation(cubeId)
