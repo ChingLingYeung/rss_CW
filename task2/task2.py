@@ -58,7 +58,9 @@ task2_savefig = False
 pltTime, pltTarget, pltTorque, pltTorqueTime, pltPosition, pltVelocity = \
     sim.moveJoint(
         task2_jointName, task2_targetPosition, task2_targetVelocity, verbose)
-        
+
+error = task2_targetPosition-sim.getJointPos(task2_jointName)
+print(error)
 
 # modify the code in below if needed
 fig = plt.figure(figsize=(6, 8))
