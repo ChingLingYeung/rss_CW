@@ -136,26 +136,36 @@ def solution():
         sim.move_with_PD(rightEndEffector, rtarget2, speed=0.01, orientation=None, 
             threshold=1e-3, maxIter=50, debug=False, verbose=False)
 
-    for i in range(50):
-        ltarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([0.001, -0.001, 0], 2*i)
-        rtarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([-0.001, 0.001, 0], 2*i)
+    for i in range(10):
+        ltarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([0.000, -0.002, 0], 2*i)
+        rtarget3 = np.array([finalTargetPos[0], finalTargetPos[1], cubePos[2] + 0.2]) - np.multiply([-0.002, 0.001, 0], 2*i)
         sim.move_with_PD(leftEndEffector, ltarget3, speed=0.01, orientation=None, 
             threshold=1e-3, maxIter=30, debug=False, verbose=False)
         sim.move_with_PD(rightEndEffector, rtarget3, speed=0.01, orientation=None, 
             threshold=1e-3, maxIter=30, debug=False, verbose=False)
 
-    for i in range(25):
-        ltarget4 = np.array([ltarget3[0], ltarget3[1], finalTargetPos[2] + (0.01 * (25 - i))])
-        rtarget4 = np.array([rtarget3[0], rtarget3[1], finalTargetPos[2] + (0.01 * (25 - i))])
+    l3 = np.array(sim.getJointPosition("LARM_JOINT5"))
+    r3 = np.array(sim.getJointPosition("RARM_JOINT5"))
 
-        sim.move_with_PD(leftEndEffector, ltarget4, speed=0.01, orientation=None, 
-            threshold=1e-3, maxIter=25, debug=False, verbose=False)
+    for i in range(10):
+        # ltarget4 = np.array([ltarget3[0]-0.01, ltarget3[1]-0.01, finalTargetPos[2] + (0.005 * (50 - i))])
+        # rtarget4 = np.array([rtarget3[0]+0.01, rtarget3[1]+0.01, finalTargetPos[2] + (0.005 * (50 - i))])
+
+        ltarget4 = np.array([l3[0], l3[1], finalTargetPos[2] + (0.005 * (10 - i))])
+        rtarget4 = np.array([r3[0]+0.05, r3[1]+0.05, finalTargetPos[2] + (0.005 * (10 - i))])
+        
         sim.move_with_PD(rightEndEffector, rtarget4, speed=0.01, orientation=None, 
-            threshold=1e-3, maxIter=25, debug=False, verbose=False)
+            threshold=1e-3, maxIter=50, debug=False, verbose=False)
+        sim.move_with_PD(leftEndEffector, ltarget4, speed=0.01, orientation=None, 
+            threshold=1e-3, maxIter=50, debug=False, verbose=False)
+        
             
 
 tableId, cubeId, targetId = getReadyForTask()
 solution()
+for _ in range(1000):
+        sim.tick()
+        time.sleep(1./1000)
 finalCubePos, finalCubeOr = sim.p.getBasePositionAndOrientation(cubeId)
 distance = np.linalg.norm(finalTargetPos - finalCubePos)*1000
 print(distance)

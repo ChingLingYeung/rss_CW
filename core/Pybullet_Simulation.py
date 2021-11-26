@@ -712,6 +712,9 @@ class Simulation(Simulation_base):
             else:
                 x_refs = self.inverseKinematics(endEffector, step_positions[i, :], step_orientations[i, :])
 
+            for i in self.robotJoints:
+                self.jointPositionOld[i] = self.getJointPos(i)
+
             for i in range(len(self.robotJoints)):
                 self.jointTargetPos[self.robotJoints[i]] = x_refs[i]
             self.tick()
@@ -758,8 +761,9 @@ class Simulation(Simulation_base):
             x_ref = self.jointTargetPos[joint]
             x_real = self.getJointPos(joint)
             dx_ref = 0.0
-            # dx_real = 0.0
+            # dx_real = (x_ref - self.jointPositionOld[joint])/self.dt
             dx_real = self.getJointVel(joint)
+            # print(dx_real)
             torque = self.calculateTorque(x_ref, x_real, dx_ref, dx_real, 0, kp, ki, kd)
             
             ### ... to here ###
